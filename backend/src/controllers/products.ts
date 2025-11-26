@@ -65,8 +65,14 @@ export const createProduct = async (
         fileName: image,
         originalName: path.basename(image),
       };
+    } else if (image.fileName.startsWith(`/${IMAGES_PATH}/`)) {
+      // Если файл уже в папке images, сохраняем как есть
+      imageData = {
+        fileName: image.fileName,
+        originalName: image.originalName,
+      };
     } else {
-      // Если image — объект, перемещаем файл из temp
+      // Если image — объект с файлом из temp, перемещаем
       const newFileName = await moveFileToImages(image.fileName);
       imageData = {
         fileName: newFileName,
@@ -142,12 +148,21 @@ export const updateProduct = async (
     if (price !== undefined) updateData.price = price;
 
     if (image && image.fileName) {
-      await deleteOldImage(product.image.fileName);
-      const newFileName = await moveFileToImages(image.fileName);
-      updateData.image = {
-        fileName: newFileName,
-        originalName: image.originalName,
-      };
+      if (image.fileName.startsWith(`/${IMAGES_PATH}/`)) {
+        // Файл уже в папке images
+        updateData.image = {
+          fileName: image.fileName,
+          originalName: image.originalName,
+        };
+      } else {
+        // Перемещаем из temp
+        await deleteOldImage(product.image.fileName);
+        const newFileName = await moveFileToImages(image.fileName);
+        updateData.image = {
+          fileName: newFileName,
+          originalName: image.originalName,
+        };
+      }
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
