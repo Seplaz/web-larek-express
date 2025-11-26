@@ -64,17 +64,19 @@ export const validateProductUpdateBody = celebrate({
 
 export const validateOrderBody = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    payment: Joi.string().valid('card', 'online').messages({
+    payment: Joi.string().valid('card', 'online').required().messages({
       'any.only': 'Поле "payment" должно быть "card" или "online"',
+      'any.required': 'Поле "payment" должно быть заполнено',
     }),
-    email: Joi.string().email().messages({
+    email: Joi.string().email().required().messages({
       'string.email': 'Поле "email" должно быть валидным email',
+      'any.required': 'Поле "email" должно быть заполнено',
     }),
-    phone: Joi.string().messages({
-      'string.base': 'Поле "phone" должно быть строкой',
+    phone: Joi.string().required().messages({
+      'any.required': 'Поле "phone" должно быть заполнено',
     }),
-    address: Joi.string().messages({
-      'string.base': 'Поле "address" должно быть строкой',
+    address: Joi.string().required().messages({
+      'any.required': 'Поле "address" должно быть заполнено',
     }),
     total: Joi.number().required().messages({
       'number.base': 'Поле "total" должно быть числом',
