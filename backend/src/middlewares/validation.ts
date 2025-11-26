@@ -17,15 +17,14 @@ export const validateProductBody = celebrate({
       'string.max': 'Максимальная длина поля "title" - 30',
       'any.required': 'Поле "title" должно быть заполнено',
     }),
-    image: Joi.object()
-      .keys({
-        fileName: Joi.string().required().messages({
-          'any.required': 'Поле "image.fileName" должно быть заполнено',
-        }),
-        originalName: Joi.string().required().messages({
-          'any.required': 'Поле "image.originalName" должно быть заполнено',
-        }),
-      })
+    image: Joi.alternatives()
+      .try(
+        Joi.string(),
+        Joi.object().keys({
+          fileName: Joi.string().required(),
+          originalName: Joi.string().required(),
+        })
+      )
       .required()
       .messages({
         'any.required': 'Поле "image" должно быть заполнено',
@@ -81,19 +80,10 @@ export const validateOrderBody = celebrate({
       'number.base': 'Поле "total" должно быть числом',
       'any.required': 'Поле "total" должно быть заполнено',
     }),
-    items: Joi.array()
-      .items(
-        Joi.string().hex().length(24).messages({
-          'string.hex': 'ID товара должен быть валидным',
-          'string.length': 'ID товара должен содержать 24 символа',
-        })
-      )
-      .min(1)
-      .required()
-      .messages({
-        'array.min': 'Список товаров не может быть пустым',
-        'any.required': 'Поле "items" должно быть заполнено',
-      }),
+    items: Joi.array().items(Joi.string()).min(1).required().messages({
+      'array.min': 'Список товаров не может быть пустым',
+      'any.required': 'Поле "items" должно быть заполнено',
+    }),
   }),
 });
 

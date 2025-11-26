@@ -57,14 +57,26 @@ export const createProduct = async (
   try {
     const { title, image, category, description, price } = req.body;
 
-    const newFileName = await moveFileToImages(image.fileName);
+    let imageData;
+
+    if (typeof image === 'string') {
+      // Если image — строка (путь), сохраняем как есть
+      imageData = {
+        fileName: image,
+        originalName: path.basename(image),
+      };
+    } else {
+      // Если image — объект, перемещаем файл из temp
+      const newFileName = await moveFileToImages(image.fileName);
+      imageData = {
+        fileName: newFileName,
+        originalName: image.originalName,
+      };
+    }
 
     const product = await Product.create({
       title,
-      image: {
-        fileName: newFileName,
-        originalName: image.originalName,
-      },
+      image: imageData,
       category,
       description,
       price,
