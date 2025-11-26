@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import path from 'path';
+import fs from 'fs';
 
 interface IProduct {
   title: string;
@@ -10,6 +12,8 @@ interface IProduct {
   description?: string;
   price: number | null;
 }
+
+const IMAGES_PATH = process.env.UPLOAD_PATH || 'images';
 
 const productSchema = new mongoose.Schema<IProduct>(
   {
@@ -46,5 +50,19 @@ const productSchema = new mongoose.Schema<IProduct>(
     versionKey: false,
   }
 );
+
+productSchema.post('findOneAndDelete', async (doc) => {
+  if (doc && doc.image && doc.image.fileName) {
+    const filename = path.basename(doc.image.fileName);
+    const filePath = path.join(__dirname, '../public', IMAGES_PATH, filename);
+
+    try {
+      await fs.promises.unlink(filePath);
+      console.log(`Файл ${filename} удалён`);
+    } catch (error) {
+      console.error(`Ошибка удаления файла ${filename}:`, error);
+    }
+  }
+});
 
 export default mongoose.model<IProduct>('product', productSchema);

@@ -98,3 +98,32 @@ export const validateOrderBody = celebrate({
       }),
   }),
 });
+
+export const validateRegisterBody = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    name: Joi.string().min(2).max(30).messages({
+      'string.min': 'Минимальная длина поля "name" - 2',
+      'string.max': 'Максимальная длина поля "name" - 30',
+    }),
+    email: Joi.string().email().required().messages({
+      'string.email': 'Поле "email" должно быть валидным email',
+      'any.required': 'Поле "email" должно быть заполнено',
+    }),
+    password: Joi.string().min(6).required().messages({
+      'string.min': 'Минимальная длина поля "password" - 6',
+      'any.required': 'Поле "password" должно быть заполнено',
+    }),
+  }),
+});
+
+export const validateLoginBody = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Поле "email" должно быть валидным email',
+      'any.required': 'Поле "email" должно быть заполнено',
+    }),
+    password: Joi.string().required().messages({
+      'any.required': 'Поле "password" должно быть заполнено',
+    }),
+  }),
+});
