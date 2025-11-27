@@ -17,19 +17,22 @@ export const register = async (
   try {
     const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new ConflictError('Пользователь с таким email уже существует');
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      tokens: [],
-    });
+    let user;
+    try {
+      user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        tokens: [],
+      });
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 11000) {
+        throw new ConflictError('Пользователь с таким email уже существует');
+      }
+      throw error;
+    }
 
     const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
@@ -45,6 +48,13 @@ export const register = async (
       accessToken,
     });
   } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as any).code === 11000
+    ) {
+      throw new ConflictError('Пользователь с таким email уже существует');
+    }
     return next(error);
   }
 };

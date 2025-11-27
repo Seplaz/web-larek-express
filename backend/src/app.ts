@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import { errors } from 'celebrate';
+import rateLimit from 'express-rate-limit';
 import { PORT, DB_ADDRESS } from './config';
 import productRouter from './routes/product';
 import orderRouter from './routes/order';
@@ -14,9 +15,16 @@ import notFoundHandler from './middlewares/notFoundHandler';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import { startCron } from './utils/cron';
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { message: 'Слишком много запросов, попробуйте позже' },
+});
+
 const app = express();
 
 app.use(cors({ credentials: true, origin: true }));
+app.use(limiter);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -27,8 +35,8 @@ app.use('/product', productRouter);
 app.use('/order', orderRouter);
 app.use('/auth', authRouter);
 app.use('/upload', uploadRouter);
+app.use('*', notFoundHandler);
 
-app.use(notFoundHandler);
 app.use(errors());
 app.use(errorLogger);
 app.use(errorHandler);
